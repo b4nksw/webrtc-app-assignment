@@ -1,5 +1,11 @@
 ## Setup
 
+```
+npm install
+```
+
+## Setup
+
 Run the server with
 
 ```
