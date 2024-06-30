@@ -80,22 +80,28 @@ export class RecordingVideoService {
   }
 
   processRecordingVideo(data: RecordingVideo): Video[] {
-    if (
-      data.isRecordingStarted ||
-      data.isStartRecordingPending ||
-      data.isStopRecordingPending
-    ) {
-      return [];
+    try {
+      if (
+        data.isRecordingStarted ||
+        data.isStartRecordingPending ||
+        data.isStopRecordingPending
+      ) {
+        return [];
+      }
+
+      const processedVideos = data.videos
+        .sort((a, b) => parseInt(a.endAt) - parseInt(b.endAt))
+        .map((video) => ({
+          ...video,
+          endAt: moment(parseInt(video.endAt)).format('mm hh A MM/DD/YYYY'),
+          url: video.price && video.price > 0 ? null : video.url,
+        }));
+
+      return processedVideos;
+    } catch (error) {
+      throw new Error(
+        `Error occurred while processing recording videos: ${error.message}`,
+      );
     }
-
-    const processedVideos = data.videos
-      .sort((a, b) => parseInt(a.endAt) - parseInt(b.endAt))
-      .map((video) => ({
-        ...video,
-        endAt: moment(parseInt(video.endAt)).format('mm hh A MM/DD/YYYY'),
-        url: video.price && video.price > 0 ? null : video.url,
-      }));
-
-    return processedVideos;
   }
 }

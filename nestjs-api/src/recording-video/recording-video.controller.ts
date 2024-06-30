@@ -8,13 +8,19 @@ export class RecordingVideoController {
 
   @Get()
   getProcessedVideos(): RecordingVideo {
-    const recordingVideoData: RecordingVideo =
-      this.recordingVideoService.fetchRecordingVideoData();
-    const processedVideos =
-      this.recordingVideoService.processRecordingVideo(recordingVideoData);
-    return {
-      ...recordingVideoData,
-      videos: processedVideos,
-    };
+    try {
+      const recordingVideoData: RecordingVideo =
+        this.recordingVideoService.fetchRecordingVideoData();
+      const processedVideos =
+        this.recordingVideoService.processRecordingVideo(recordingVideoData);
+      return {
+        ...recordingVideoData,
+        videos: processedVideos,
+      };
+    } catch (error) {
+      throw new Error(
+        `Error occurred while getting recording videos: ${error.message}`,
+      );
+    }
   }
 }
