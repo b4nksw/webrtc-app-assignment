@@ -2,15 +2,18 @@
 <html>
   <head>
     <title>WebRTC Example</title>
+    <link rel="stylesheet" href="css/index.css">
   </head>
   <body>
     <h1>WebRTC Example</h1>
+    <div id="error" class="error-message"></div>
     <video id="localVideo" autoplay muted></video>
     <video id="remoteVideo" autoplay></video>
     <script>
 
       const localVideo = document.getElementById('localVideo');
       const remoteVideo = document.getElementById('remoteVideo');
+      const errorMessageDiv = document.getElementById('error');
 
       let streamPromise;
       let localStream;
@@ -23,7 +26,16 @@
       .then(stream => {
         localVideo.srcObject = stream;
         localStream = stream;
-      });
+      })
+      .catch((error) => {
+        const errorMessage = 
+          (error.name == 'NotAllowedError') ? 
+          'Permission denied. Please allow access to camera and microphone' : 
+          `Error accessing media devices: ${error.message}`
+        errorMessageDiv.textContent = errorMessage;
+        console.log(error.name)
+        console.log(error.message)
+      })
 
       function createPeerConnection(source){
         const peerConnection = new RTCPeerConnection()

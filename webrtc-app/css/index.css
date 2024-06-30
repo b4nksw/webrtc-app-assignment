@@ -1,0 +1,10 @@
+video {
+  margin: 0 10px 0 0;
+  width: 40%;
+}
+
+.error-message {
+  font-size: large;
+  font-weight: bold;
+  color: #ef2d2d;
+}
