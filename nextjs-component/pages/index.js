@@ -5,8 +5,10 @@ export async function getServerSideProps() {
   let videos = [];
   try {
     const res = await fetch('http://localhost:3001/api/recording-videos');
-    const recordingVideo = await res.json();
-    videos = recordingVideo.videos;
+    if (res.status === 200){
+      const data = await res.json();
+      videos = data.videos;
+    }
   } catch (error) {
     console.error('Fail to fetch recording videos:', error.message);
   }
