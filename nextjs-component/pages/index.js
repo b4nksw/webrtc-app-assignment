@@ -2,9 +2,14 @@ import fetch from 'isomorphic-unfetch';
 import RecordingVideos from './recording-videos'
 
 export async function getServerSideProps() {
-  const res = await fetch('http://localhost:3001/api/recording-videos');
-  const recordingVideo = await res.json();
-  const videos = recordingVideo.videos;
+  let videos = [];
+  try {
+    const res = await fetch('http://localhost:3001/api/recording-videos');
+    const recordingVideo = await res.json();
+    videos = recordingVideo.videos;
+  } catch (error) {
+    console.error('Fail to fetch recording videos:', error.message);
+  }
   return {
     props: { videos },
   };
