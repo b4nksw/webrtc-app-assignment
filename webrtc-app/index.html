@@ -12,50 +12,87 @@
       const localVideo = document.getElementById('localVideo');
       const remoteVideo = document.getElementById('remoteVideo');
 
-      const peerConnection = new RTCPeerConnection();
+      let streamPromise;
+      let localStream;
+      let localPeerConnection, remotePeerConnection;
 
-      navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then(stream => {
+      streamPromise = navigator.mediaDevices.getUserMedia({ 
+        video: true,
+        audio: true 
+      })
+      .then(stream => {
         localVideo.srcObject = stream;
-        stream.getTracks().forEach(track => peerConnection.addTrack(track, stream));
+        localStream = stream;
       });
+
+      function createPeerConnection(source){
+        const peerConnection = new RTCPeerConnection()
+
+        // handle ICE candidate
+        peerConnection.onicecandidate = event => {
+          if (event.candidate) {
+            ws.send(JSON.stringify({ source, candidate: event.candidate }));
+          } else {
+            console.log(`All ICE candidates from ${source} are sent`)
+          }
+        };
+
+        // handle tracks
+        peerConnection.ontrack = event => {
+          remoteVideo.srcObject = event.streams[0];
+        };
+
+        localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
+
+        return peerConnection
+      }
 
       const ws = new WebSocket('ws://localhost:8080');
       
-      ws.onmessage = async (message, isBinary) => {
+      ws.onmessage = async (message) => {
         const data = JSON.parse(message.data);
         if (data.offer) {
-          await peerConnection.setRemoteDescription(new RTCSessionDescription(data.offer));
-          const answer = await peerConnection.createAnswer();
-          await peerConnection.setLocalDescription(answer);
+          console.log('Handle offer:', data.offer)
+          remotePeerConnection = createPeerConnection('remote')
+          await remotePeerConnection.setRemoteDescription(new RTCSessionDescription(data.offer));
+          const answer = await remotePeerConnection.createAnswer();
+          await remotePeerConnection.setLocalDescription(answer);
           ws.send(JSON.stringify({ answer }));
         }
         if (data.answer) {
-          await peerConnection.setRemoteDescription(new RTCSessionDescription(data.answer));
+          console.log('Handle answer by local:', data.answer)
+          await localPeerConnection.setRemoteDescription(new RTCSessionDescription(data.answer));
         }
         if (data.candidate) {
-          await peerConnection.addIceCandidate(new RTCIceCandidate(data.candidate));
+          const source = data.source;
+          if (source == 'local'){
+            console.log('ICE candidate from local. Set candidate for remote peer connection...')
+            console.log('remotePeerConnection:', remotePeerConnection)
+            await remotePeerConnection.addIceCandidate(new RTCIceCandidate(data.candidate));
+          } else {
+            console.log('ICE candidate from remote. Set candidate for local peer connection...')
+            console.log('localPeerConnection:', localPeerConnection)
+            await localPeerConnection.addIceCandidate(new RTCIceCandidate(data.candidate));
+          }
         }
       };
-
-      peerConnection.onicecandidate = event => {
-        if (event.candidate) {
-          ws.send(JSON.stringify({ candidate: event.candidate }));
-        }
+      
+      ws.onopen = async () => {
+        // wait for local stream to be available before creating offer
+        await streamPromise;
+        createOffer();
       };
 
-      peerConnection.ontrack = event => {
-        remoteVideo.srcObject = event.streams[0];
+      ws.onclose = () => {
+        console.log('WebSocket connection closed');
       };
 
       async function createOffer() {
-        const offer = await peerConnection.createOffer();
-        await peerConnection.setLocalDescription(offer);
+        localPeerConnection = createPeerConnection('local')
+        const offer = await localPeerConnection.createOffer();
+        await localPeerConnection.setLocalDescription(offer);
         ws.send(JSON.stringify({ offer }));
       }
-
-      ws.onopen = () => {
-        createOffer();
-      };
 
     </script>
   </body>
