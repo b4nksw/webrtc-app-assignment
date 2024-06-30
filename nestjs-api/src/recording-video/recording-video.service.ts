@@ -16,7 +16,7 @@ export class RecordingVideoService {
         videos: [
           {
             id: '0',
-            url: 'video0-url',
+            url: 'http://video0-url.com',
             price: -5,
             endAt: '1719565175850',
           },
@@ -29,19 +29,19 @@ export class RecordingVideoService {
         videos: [
           {
             id: '0',
-            url: 'video0-url',
+            url: 'http://video0-url.com',
             price: -10,
             endAt: '1719610813900',
           },
           {
             id: '1',
-            url: 'video1-url',
+            url: 'http://video1-url.com',
             price: -5,
             endAt: '1719510812900',
           },
           {
             id: '2',
-            url: 'video2-url',
+            url: 'http://video2-url.com',
             price: 0,
             endAt: '1719410811900',
           },
@@ -54,19 +54,19 @@ export class RecordingVideoService {
         videos: [
           {
             id: '0',
-            url: 'video0-url',
+            url: 'http://video0-url.com',
             price: -1,
             endAt: '1719565175800',
           },
           {
             id: '1',
-            url: 'video1-url',
+            url: 'http://video1-url.com',
             price: 1,
             endAt: '1719665176800',
           },
           {
             id: '2',
-            url: 'video2-url',
+            url: 'http://video2-url.com',
             price: 2,
             endAt: '1719765177800',
           },
